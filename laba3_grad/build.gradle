@@ -1,0 +1,61 @@
+plugins {
+    id 'java'
+    id 'war'
+    id 'application'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+description = 'demo'
+sourceCompatibility = '11'
+targetCompatibility = '11'
+mainClassName = 'org.example.Main'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    providedCompile 'jakarta.faces:jakarta.faces-api:4.0.0'
+    providedCompile 'jakarta.platform:jakarta.jakartaee-api:10.0.0'
+    implementation 'org.primefaces:primefaces:14.0.0:jakarta'
+    providedCompile 'org.projectlombok:lombok:1.18.28'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.postgresql:postgresql:42.7.4'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+}
+
+tasks.register('validateXml') {
+    group = 'verification'
+    description = 'Validates XML files in src directory'
+    doLast {
+        ant.taskdef(name: 'xmlvalidate', classname: 'org.apache.tools.ant.taskdefs.optional.XMLValidateTask',
+                classpath: configurations.compileClasspath.asPath)
+        ant.xmlvalidate(lenient: true, failonerror: true) {
+            fileset(dir: projectDir) {
+                include(name: '**/*.xml')
+            }
+        }
+    }
+}
+
+tasks.register('playMusic') {
+    group = 'custom'
+    description = 'Plays music using VLC'
+    doLast {
+        exec {
+            commandLine 'C:\\Users\\Kirill\\vlc\\vlc.exe', 'C:\\Users\\Kirill\\vlc\\music.mp3'
+        }
+    }
+}
+tasks.register('convertProperties', JavaExec) {
+    group = 'custom'
+    description = 'Converts localization properties files from UTF-8 to ISO-8859-1'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('org.example.Native2AsciiConverter') // <-- вот здесь
+    dependsOn tasks.classes
+}
+
+
+tasks.build.dependsOn(playMusic)
